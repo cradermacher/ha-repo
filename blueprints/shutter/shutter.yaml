@@ -1,1 +1,87 @@
+blueprint:
+  name: Automation Rolladen
+  description: Automation eines Rolladen abhängig von Werktag, Uhrzeit, Fensterstellung. Zur Aktivierung/Deaktivierung der Steuerung kann ein globaler Schalter definiert werden. Das Hoch- und Runterfahren kann durch separate Schalter unterbunden werden. Die Rahmenzeiten (frühestes und spätestes Öffnen und Schließen) werden durch Zeiteinträge definiert, dazwischen wird die Bewegung durch die Variable "es ist Tag" gesteuert. Diese Variable kann durch eine separate Automation den eigenen Wünschen entsprechend gesetzt werden.
+  domain: automation
+  input:
+    rolladen:
+      name: Rolladen
+      description: Zu steuernden Rolladen auswählen
+      selector:
+        entity: 
+          domain: cover
+          multiple: false
+    workday:
+      name: Werktag
+      description: Entität die anzeigt ob ein Werktag ist
+      selector:
+        entity: 
+          domain: binary_sensor
+          multiple: false
+    aktiv:
+      name: Aktiv
+      description: Entität zur Steuerung, ob die gesamte Automation ausgeführt werden soll
+      selector:
+        entity: 
+          domain: binary_sensor
+          multiple: false
+    runterfahren_verhindern:
+      name: Automatisch Runterfahren ausschalten
+      description: Entität, die verhindert, dass der Rolladen automatisch runterfährt
+      selector:
+        entity: 
+          domain: binary_sensor
+          multiple: false
+    hochfahren_verhindern:
+      name: Automatisch hochfahren ausschalten
+      description: Entitä, die verhindert, das der Rolladen automatisch hochfährt
+      selector:
+        entity: 
+          domain: binary_sensor
+          multiple: false
+    early_open_workday:
+      name: Frühestes öffnen an Werktagen
+      selector:
+        time:
+    early_open_non_workday:
+      name: Frühestes öffnen an nicht Werktagen
+      selector:
+        time:
+    latest_open_workday:
+      name: Spätestes öffnen an Werktagen
+      selector:
+        time:
+    latest_open_non_workday:
+      name: Spätestes öffnen an nicht Werktagen
+      selector:
+        time:
+    fenster_offen_wert:
+      name: Rolladenstellung bei Fenster offen
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+          mode: slider
+          step: 1.0
+    fenster_gekippt_wert:
+      name: Rolladenstellung bei Fenster gekippt
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+          mode: slider
+          step: 1.0
+    fenster_geschlossen_wert:
+      name: Rolladenstellung bei Fenster geschlossen
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: '%'
+          mode: slider
+          step: 1.0
 
+
+trigger: []
+action: []
