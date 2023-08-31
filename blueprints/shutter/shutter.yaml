@@ -1,11 +1,13 @@
 blueprint:
   name: Automation Rolladen
-  description: Automation eines Rolladen abhängig von Werktag, Uhrzeit, Fensterstellung. 
-               Zur Aktivierung/Deaktivierung der Steuerung kann ein globaler Schalter definiert werden. 
-               Das Hoch- und Runterfahren kann durch separate Schalter unterbunden werden. 
-               Die Rahmenzeiten (frühestes und spätestes Öffnen und Schließen) werden durch Zeiteinträge definiert, 
-               dazwischen wird die Bewegung durch die Variable "es ist Tag" gesteuert. Diese Variable kann durch 
-               eine separate Automation den eigenen Wünschen entsprechend gesetzt werden.
+  description: | 
+    # Rolladen
+    Automation eines Rolladen abhängig von Werktag, Uhrzeit, Fensterstellung. 
+    Zur Aktivierung/Deaktivierung der Steuerung kann ein globaler Schalter definiert werden. 
+    Das Hoch- und Runterfahren kann durch separate Schalter unterbunden werden. 
+    Die Rahmenzeiten (frühestes und spätestes Öffnen und Schließen) werden durch Zeiteinträge definiert, 
+    dazwischen wird die Bewegung durch die Variable "es ist Tag" gesteuert. Diese Variable kann durch 
+    eine separate Automation den eigenen Wünschen entsprechend gesetzt werden.
   domain: automation
   input:
     rolladen:
