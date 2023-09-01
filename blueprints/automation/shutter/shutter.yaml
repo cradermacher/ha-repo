@@ -11,12 +11,12 @@ blueprint:
     dazwischen wird die Bewegung durch die Variable "es ist Tag" gesteuert. Diese Variable kann durch 
     eine separate Automation den eigenen Wünschen entsprechend gesetzt werden.
     
-    Link zum Repo [Github](https://github.com/cradermacher/ha-repo/blob/main/blueprints/shutter)
+    Link zum Repo [Github](https://github.com/cradermacher/ha-repo/)
 
     Version 1.0
     Datum 01.09.2023
     
-    source_url:https://github.com/cradermacher/ha-repo/blob/main/blueprints/shutter/shutter.yaml
+    source_url:https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter.yaml
   domain: automation
   input:
     rolladen:
