@@ -2,12 +2,21 @@ blueprint:
   name: Automation Rolladen
   description: | 
     # Rolladen
-    Automation eines Rolladen abhängig von Werktag, Uhrzeit, Fensterstellung. 
+    Automation eines Rolladen abhängig von Werktag, Uhrzeit, Fensterstellung.
+
     Zur Aktivierung/Deaktivierung der Steuerung kann ein globaler Schalter definiert werden. 
     Das Hoch- und Runterfahren kann durch separate Schalter unterbunden werden. 
+    
     Die Rahmenzeiten (frühestes und spätestes Öffnen und Schließen) werden durch Zeiteinträge definiert, 
     dazwischen wird die Bewegung durch die Variable "es ist Tag" gesteuert. Diese Variable kann durch 
     eine separate Automation den eigenen Wünschen entsprechend gesetzt werden.
+    
+    Link zum Repo [Github](https://github.com/cradermacher/ha-repo/blob/main/blueprints/shutter)
+
+    Version 1.0
+    Datum 01.09.2023
+    
+    source_url:https://github.com/cradermacher/ha-repo/blob/main/blueprints/shutter/shutter.yaml
   domain: automation
   input:
     rolladen:
