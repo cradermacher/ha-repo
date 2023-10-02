@@ -11,12 +11,12 @@ blueprint:
     dazwischen wird die Bewegung durch die Variable "es ist Tag" gesteuert. Diese Variable kann durch 
     eine separate Automation den eigenen Wünschen entsprechend gesetzt werden.
     
-    Link zum Repo [Github](https://github.com/cradermacher/ha-repo/)
+    Link zum Repo [Github](https://github.com/cradermacher/ha-repo/blob/main/blueprints/shutter)
 
     Version 1.0
     Datum 01.09.2023
-    
     source_url:https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter.yaml
+
   domain: automation
   input:
     rolladen:
@@ -29,6 +29,13 @@ blueprint:
     workday:
       name: Werktag
       description: Entität die anzeigt ob ein Werktag ist
+      selector:
+        entity: 
+          domain: binary_sensor
+          multiple: false
+    day_night:
+      name: Es ist Tag
+      description: Entität die anzeigt ob es Tag oder Nacht ist
       selector:
         entity: 
           domain: binary_sensor
@@ -49,7 +56,7 @@ blueprint:
           multiple: false
     hochfahren_verhindern:
       name: Automatisch hochfahren ausschalten
-      description: Entitä, die verhindert, das der Rolladen automatisch hochfährt
+      description: Entität, die verhindert, das der Rolladen automatisch hochfährt
       selector:
         entity: 
           domain: binary_sensor
@@ -70,6 +77,13 @@ blueprint:
       name: Spätestes öffnen an nicht Werktagen
       selector:
         time:
+    fenster_sensor:
+      name: Fenstersensor
+      description: Entität für die Ermittlung der Fensterstellung (offen, gekippt, geschlossen)
+      selector:
+        entity:
+          domain: sensor
+          multiple: false
     fenster_offen_wert:
       name: Rolladenstellung bei Fenster offen
       selector:
@@ -99,5 +113,836 @@ blueprint:
           step: 1.0
 
 
-trigger: []
-action: []
+trigger:
+  - platform: time
+    at: !input early_open_workday
+    id: früheste_öffnung_werktag
+
+  - platform: time
+    at: !input early_open_non_workday
+    id: früheste_öffnung_non_werktag
+  
+  - platform: time
+    at: !input latest_open_workday
+    id: späteste_öffnung_werktag
+
+  - platform: time
+    at: !input latest_open_non_workday
+    id: späteste_öffnung_non_werktag
+
+  - platform: time
+    at: !input _early_close_workday
+    id: früheste_öffnung_werktag
+
+  - platform: time
+    at: !input early_close_non_workday
+    id: früheste_öffnung_non_werktag
+  
+  - platform: time
+    at: !input latest_close_workday
+    id: späteste_öffnung_werktag
+
+  - platform: time
+    at: !input latest_close_non_workday
+    id: späteste_öffnung_non_werktag
+
+  - platform: state
+    entity_id: !input day_night
+    from: "on"
+    to: "off"
+    id: es_ist_nacht
+
+  - platform: state
+    entity_id: !input day_night
+    from: "off"
+    to: "on"
+    id: es_ist_tag
+
+  - platform: state
+    entity_id: !input day_night
+    from: "off"
+    to: "on"
+    id: es_ist_tag
+  
+action:
+  ############################################
+  # Tag-Werktag-früheste Öffnung
+  ############################################
+  - if:
+      - condition: trigger
+        id:
+          - früheste_öffnung_werktag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.es_ist_tag
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_offnen_verhindern
+        state: "off"
+    then:
+      - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+        domain: cover
+        entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+        type: set_position
+        position: 0
+      - service: input_text.set_value
+        data:
+          value: Der Rolladen wurde automatisch geöffnet (früheste Öffnung)
+        target:
+          entity_id: input_text.2_1_arbeitszimmer_roladen_status
+      - service: input_select.select_option
+        data:
+          option: Tag
+        target:
+          entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+    alias: Tag-Werktag-früheste Öffnung
+
+
+  ##############################################
+  # Tag-Werktag-zwischen 6:30 und 7:00
+  #############################################
+  - if:
+      - condition: trigger
+        id:
+          - es_ist_tag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+      - condition: time
+        after: "06:30:00"
+        before: "07:00:00"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_offnen_verhindern
+        state: "off"
+    then:
+      - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+        domain: cover
+        entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+        type: set_position
+        position: 0
+      - service: input_text.set_value
+        data:
+          value: >-
+            Der Rolladen wurde automatisch geöffnet (zwischen früheste und
+            späteste Öffnung)
+        target:
+          entity_id: input_text.2_1_arbeitszimmer_roladen_status
+      - service: input_select.select_option
+        data:
+          option: Tag
+        target:
+          entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+    alias: Tag-Werktag-zwischen 6:30 und 7:00
+
+
+  ##############################################
+  # Tag-Werktag-späteste Öffnung
+  ##############################################
+  - if:
+      - condition: trigger
+        id:
+          - späteste_öffnung_werktag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_offnen_verhindern
+        state: "off"
+      - condition: state
+        entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        state: Nacht
+    then:
+      - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+        domain: cover
+        entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+        type: set_position
+        position: 0
+      - service: input_text.set_value
+        data:
+          value: Der Rolladen wurde automatisch geöffnet (späteste Öffnung)
+        target:
+          entity_id: input_text.2_1_arbeitszimmer_roladen_status
+      - service: input_select.select_option
+        data:
+          option: Tag
+        target:
+          entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+    alias: Tag-Werktag-späteste Öffnung
+
+
+  ###############################################
+  # Tag-non-Werktag-früheste Öffnung
+  ###############################################
+  - if:
+      - condition: trigger
+        id:
+          - früheste_öffnung_non_werktag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "off"
+      - condition: state
+        entity_id: input_boolean.es_ist_tag
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_offnen_verhindern
+        state: "off"
+    then:
+      - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+        domain: cover
+        entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+        type: set_position
+        position: 0
+      - service: input_text.set_value
+        data:
+          value: Der Rolladen wurde automatisch geöffnet (früheste Öffnung)
+        target:
+          entity_id: input_text.2_1_arbeitszimmer_roladen_status
+      - service: input_select.select_option
+        data:
+          option: Tag
+        target:
+          entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+    alias: Tag-non-Werktag-früheste Öffnung
+
+
+  ###################################################
+  # Tag-non-Werktag-zwischen 7:30 und 8:00
+  ###################################################
+  - if:
+      - condition: trigger
+        id:
+          - es_ist_tag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "off"
+      - condition: time
+        after: "07:30:00"
+        before: "08:00:00"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_offnen_verhindern
+        state: "off"
+    then:
+      - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+        domain: cover
+        entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+        type: set_position
+        position: 0
+      - service: input_text.set_value
+        data:
+          value: >-
+            Der Rolladen wurde automatisch geöffnet (zwischen früheste und
+            späteste Öffnung)
+        target:
+          entity_id: input_text.2_1_arbeitszimmer_roladen_status
+      - service: input_select.select_option
+        data:
+          option: Tag
+        target:
+          entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+    alias: Tag-non-Werktag-zwischen 7:30 und 8:00
+
+
+  ##################################################
+  #  Tag-non-Werktag-späteste Öffnung
+  ##################################################
+  - if:
+      - condition: trigger
+        id:
+          - späteste_öffnung_non-werktag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "off"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_offnen_verhindern
+        state: "off"
+      - condition: state
+        entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        state: Nacht
+    then:
+      - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+        domain: cover
+        entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+        type: set_position
+        position: 0
+      - service: input_text.set_value
+        data:
+          value: Der Rolladen wurde automatisch geöffnet (späteste Öffnung)
+        target:
+          entity_id: input_text.2_1_arbeitszimmer_roladen_status
+      - service: input_select.select_option
+        data:
+          option: Tag
+        target:
+          entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+    alias: Tag-non-Werktag-späteste Öffnung
+
+
+  ################################################
+  # Nacht-Werktag-vor 16:30
+  ################################################
+  - if:
+      - condition: trigger
+        id:
+          - frühestes_schließen_werktag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.es_ist_tag
+        state: "off"
+      - condition: time
+        after: "16:30:00"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+        state: "off"
+    then:
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: closed
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 100
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch vollständig geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster geschlossen
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: tilted
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 75
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch teilweise geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster gekippt
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: open
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 0
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde nicht geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster offen
+    alias: Nacht-Werktag-vor 16:30
+
+  
+  ######################################################
+  # Nacht-Werktag-zwischen 16:30 und 21:00
+  ######################################################
+  - if:
+      - condition: trigger
+        id:
+          - es_ist_nacht
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+      - condition: time
+        before: "21:30:00"
+        after: "16:30:00"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+        state: "off"
+    then:
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: closed
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 100
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch vollständig geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster geschlossen
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: tilted
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 75
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch teilweise geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster gekippt
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: open
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 0
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde nicht geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster offen
+    alias: Nacht-Werktag-zwischen 16:30 und 21:00
+
+
+  ####################################################
+  # Nacht-werktag-späteste Schließung
+  ####################################################
+  - if:
+      - condition: trigger
+        id:
+          - späteste_schließung_werktag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+        state: "off"
+      - condition: state
+        entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        state: Tag
+    then:
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: closed
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 100
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch vollständig geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster geschlossen
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: tilted
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 75
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch teilweise geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster gekippt
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: open
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 0
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde nicht geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: ç
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster offen
+    alias: Nacht-werktag-späteste Schließung
+
+
+  ##################################################
+  # Nacht-non-Werktag-vor 17:00
+  ##################################################
+  - if:
+      - condition: trigger
+        id:
+          - frühestes_schließen_werktag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.es_ist_tag
+        state: "off"
+      - condition: time
+        after: "16:30:00"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+        state: "off"
+    then:
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: closed
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 100
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch vollständig geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster geschlossen
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: tilted
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 75
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch teilweise geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster gekippt
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: open
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 0
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde nicht geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster offen
+    alias: Nacht-non-Werktag-vor 17:00
+
+
+  ##################################################
+  # Nacht-non-Werktag-zwischen 17:00 und 21:30
+  ##################################################
+  - if:
+      - condition: trigger
+        id:
+          - es_ist_nacht
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "off"
+      - condition: time
+        before: "21:30:00"
+        after: "17:00:00"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+        state: "off"
+    then:
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: closed
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 100
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch vollständig geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster geschlossen
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: tilted
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 75
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch teilweise geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster gekippt
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: open
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 0
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde nicht geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster offen
+    alias: Nacht-non-Werktag-zwischen 17:00 und 21:30
+
+
+  ########################################################
+  # Nacht-non-Werktag-späteste Schließung
+  ########################################################
+  - if:
+      - condition: trigger
+        id:
+          - späteste_schließung_non-werktag
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "off"
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+        state: "off"
+      - condition: state
+        entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        state: Tag
+    then:
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: closed
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 100
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch vollständig geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster geschlossen
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: tilted
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 75
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde automatisch teilweise geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster gekippt
+      - if:
+          - condition: state
+            entity_id: sensor.2_1_arbeitszimmer_fenster_links
+            state: open
+        then:
+          - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+            domain: cover
+            entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+            type: set_position
+            position: 0
+          - service: input_text.set_value
+            data:
+              value: Der Rolladen wurde nicht geschlossen
+            target:
+              entity_id: input_text.2_1_arbeitszimmer_roladen_status
+          - service: input_select.select_option
+            data:
+              option: Nacht
+            target:
+              entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        alias: Fenster offen
+    alias: Nacht-non-Werktag-späteste Schließung
+
+
+    ##########################################
+    # Trigger_fenster_offen
+    ##########################################
+  - if:
+      - condition: trigger
+        id:
+          - fenster_offen
+      - condition: state
+        entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        state: Nacht
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+        state: "off"
+    then:
+      - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+        domain: cover
+        entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+        type: set_position
+        position: 0
+    alias: Trigger_fenster_offen
+
+
+    #########################################
+    # Trigger_fenster_gekippt
+    #########################################
+  - if:
+      - condition: trigger
+        id:
+          - fenster_gekippt
+      - condition: state
+        entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        state: Nacht
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+        state: "off"
+    then:
+      - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+        domain: cover
+        entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+        type: set_position
+        position: 70
+    alias: Trigger_fenster_gekippt
+
+
+    #########################################
+    # Trigger_fenster_geschlossen
+    #########################################
+  - if:
+      - condition: trigger
+        id:
+          - fenster_geschlossen
+      - condition: state
+        entity_id: input_select.2_1_arbeitszimmer_rolladen_links_position
+        state: Nacht
+      - condition: state
+        entity_id: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+        state: "off"
+    then:
+      - device_id: 4e7fdbe800da0e94412a2b5a61585f77
+        domain: cover
+        entity_id: e1355bc1b900e93ffca4406ecc0ff9f1
+        type: set_position
+        position: 100
+    alias: Trigger_fenster_geschlossen
+
