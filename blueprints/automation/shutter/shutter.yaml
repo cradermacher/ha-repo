@@ -67,35 +67,50 @@ blueprint:
     earliest_open_workday:
       name: Frühestes öffnen an Werktagen
       selector:
-        time:
+        entity:
+          domain: input_datetime
+          multiple: false
     earliest_open_non_workday:
       name: Frühestes öffnen an nicht Werktagen
       selector:
-        time:
+        entity:
+          domain: input_datetime
+          multiple: false
     latest_open_workday:
       name: Spätestes öffnen an Werktagen
       selector:
-        time:
+        entity:
+          domain: input_datetime
+          multiple: false
     latest_open_non_workday:
       name: Spätestes öffnen an nicht Werktagen
-      selector:
-        time:
+      sentity:
+          domain: input_datetime
+          multiple: false
     earliest_close_workday:
       name: Frühestes öffnen an Werktagen
       selector:
-        time:
+        entity:
+          domain: input_datetime
+          multiple: false
     earliest_close_non_workday:
       name: Frühestes öffnen an nicht Werktagen
       selector:
-        time:
+        entity:
+          domain: input_datetime
+          multiple: false
     latest_close_workday:
       name: Spätestes öffnen an Werktagen
       selector:
-        time:
+        entity:
+          domain: input_datetime
+          multiple: false
     latest_close_non_workday:
       name: Spätestes öffnen an nicht Werktagen
       selector:
-        time:
+        entity:
+          domain: input_datetime
+          multiple: false
     window_sensor:
       name: Fenstersensor
       description: Entität für die Ermittlung der Fensterstellung (offen, gekippt, geschlossen)
