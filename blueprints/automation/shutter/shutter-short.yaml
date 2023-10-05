@@ -116,33 +116,7 @@ blueprint:
         entity:
           domain: sensor
           multiple: false
-    window_open_value:
-      name: Rolladenstellung bei Fenster offen
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: "%"
-          mode: slider
-          step: 1.0
-    window_tilted_value:
-      name: Rolladenstellung bei Fenster gekippt
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: "%"
-          mode: slider
-          step: 1.0
-    window_closed_value:
-      name: Rolladenstellung bei Fenster geschlossen
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: "%"
-          mode: slider
-          step: 1.0
+    
     text_status:
       name: Statusausgabe
       description: Statusausgabe als Text, enthält die Information, was der letzte Auslöser war
