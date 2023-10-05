@@ -1,0 +1,25 @@
+description: ""
+alias: Automation Rolladen Test
+use_blueprint:
+  path: cradermacher/shutter-short.yaml
+  input:
+    shutter: cover.2_1_arbeitszimmer_rolladen_rechts
+    workday: binary_sensor.workday_sensor
+    day_night: input_boolean.es_ist_tag
+    active: input_boolean.2_1_arbeitszimmer_rolladen_aktiv
+    close_off: input_boolean.2_1_arbeitszimmer_rolladen_schliessen_verhindern
+    open_off: input_boolean.2_1_arbeitszimmer_rolladen_offnen_verhindern
+    earliest_open_workday: input_datetime.rolladen_fruhestes_offnen
+    earliest_open_non_workday: input_datetime.rolladen_fruhestes_offnen_non_werktag
+    latest_open_workday: input_datetime.rolladen_spatestes_offnen
+    latest_open_non_workday: input_datetime.rolladen_spatestes_offnen_non_werktag
+    earliest_close_workday: input_datetime.rolladen_fruhestes_schliessen
+    earliest_close_non_workday: input_datetime.rolladen_fruhestes_schliessen_non_werktag
+    latest_close_workday: input_datetime.rolladen_spatestes_schliessen
+    latest_close_non_workday: input_datetime.rolladen_spatestes_schliessen_non_werktag
+    window_sensor: sensor.2_1_arbeitszimmer_fenster_rechts
+    window_open_value: 0
+    window_tilted_value: 75
+    window_closed_value: 100
+    text_status: input_text.2_1_arbeitszimmer_rolladen_rechts_status
+    mode: input_select.2_1_arbeitszimmer_rolladen_rechts_modus
