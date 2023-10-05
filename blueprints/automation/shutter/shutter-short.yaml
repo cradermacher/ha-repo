@@ -1,5 +1,5 @@
 blueprint:
-  name: Automation Rolladen Test
+  name: Automation Rolladen
   description: |
     # Rolladen
     Automation eines Rolladen abhängig von Werktag, Uhrzeit, Fensterstellung.
@@ -15,7 +15,7 @@ blueprint:
 
     Version 1.0
     Datum 04.10.2023
-  source_url: https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter-short.yaml
+    source_url: https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter.yaml
 
   domain: automation
   input:
@@ -26,14 +26,85 @@ blueprint:
         entity:
           domain: cover
           multiple: false
+    workday:
+      name: Werktag
+      description: Entität die anzeigt ob ein Werktag ist
+      selector:
+        entity:
+          domain: binary_sensor
+          multiple: false
+    day_night:
+      name: Es ist Tag
+      description: Entität die anzeigt ob es Tag oder Nacht ist
+      selector:
+        entity:
+          domain: input_boolean
+          multiple: false
+    active:
+      name: Aktiv
+      description: Entität zur Steuerung, ob die gesamte Automation ausgeführt werden soll
+      selector:
+        entity:
+          domain: input_boolean
+          multiple: false
+    close_off:
+      name: Automatisch Runterfahren ausschalten
+      description: Entität, die verhindert, dass der Rolladen automatisch runterfährt
+      selector:
+        entity:
+          domain: input_boolean
+          multiple: false
+    open_off:
+      name: Automatisch Hochfahren ausschalten
+      description: Entität, die verhindert, das der Rolladen automatisch hochfährt
+      selector:
+        entity:
+          domain: input_boolean
+          multiple: false
     earliest_open_workday:
       name: Frühestes Öffnen an Werktagen
       selector:
         entity:
           domain: input_datetime
           multiple: false
+    earliest_open_non_workday:
+      name: Frühestes Öffnen an nicht Werktagen
+      selector:
+        entity:
+          domain: input_datetime
+          multiple: false
+    latest_open_workday:
+      name: Spätestes Öffnen an Werktagen
+      selector:
+        entity:
+          domain: input_datetime
+          multiple: false
+    latest_open_non_workday:
+      name: Spätestes Öffnen an nicht Werktagen
+      selector:
+        entity:
+          domain: input_datetime
+          multiple: false
     earliest_close_workday:
       name: Frühestes Schließen an Werktagen
+      selector:
+        entity:
+          domain: input_datetime
+          multiple: false
+    earliest_close_non_workday:
+      name: Frühestes Schließen an nicht Werktagen
+      selector:
+        entity:
+          domain: input_datetime
+          multiple: false
+    latest_close_workday:
+      name: Spätestes Schließen an Werktagen
+      selector:
+        entity:
+          domain: input_datetime
+          multiple: false
+    latest_close_non_workday:
+      name: Spätestes Schließen an nicht Werktagen
       selector:
         entity:
           domain: input_datetime
@@ -86,12 +157,66 @@ blueprint:
         entity:
           domain: input_select
           multiple: false
-          
+
 trigger:
   - platform: time
     at: !input earliest_open_workday
     id: earliest_open_workday
 
+  - platform: time
+    at: !input earliest_open_non_workday
+    id: earliest_open_non_workday
+
+  - platform: time
+    at: !input latest_open_workday
+    id: latest_open_workday
+
+  - platform: time
+    at: !input latest_open_non_workday
+    id: latest_open_non_workday
+
+  - platform: time
+    at: !input earliest_close_workday
+    id: earliest_close_workday
+
+  - platform: time
+    at: !input earliest_close_non_workday
+    id: earliest_close_non_workday
+
+  - platform: time
+    at: !input latest_close_workday
+    id: latest_close_workday
+
+  - platform: time
+    at: !input latest_close_non_workday
+    id: latest_close_non_workday
+
+  - platform: state
+    entity_id: !input day_night
+    from: "on"
+    to: "off"
+    id: night
+
+  - platform: state
+    entity_id: !input day_night
+    from: "off"
+    to: "on"
+    id: day
+
+  - platform: state
+    entity_id: !input window_sensor
+    to: "open"
+    id: window_open
+
+  - platform: state
+    entity_id: !input window_sensor
+    to: "tilted"
+    id: window_tilted
+
+  - platform: state
+    entity_id: !input window_sensor
+    to: "closed"
+    id: window_closed
 
 action:
   ############################################
@@ -101,6 +226,18 @@ action:
       - condition: trigger
         id:
           - earliest_open_workday
+      - condition: state
+        entity_id: !input active
+        state: on
+      - condition: state
+        entity_id: !input workday
+        state: "on"
+      - condition: state
+        entity_id: !input day_night
+        state: "on"
+      - condition: state
+        entity_id: !input open_off
+        state: "off"
     then:
       - service: cover.set_cover_position
         data:
@@ -118,78 +255,189 @@ action:
         target:
           entity_id: !input mode
     alias: Tag-Werktag-früheste Öffnung
-
-  ################################################
-  # Nacht-Werktag vor früheste Schließung
-  ################################################
+  
+  ##############################################
+  # Tag-Werktag-zwischen früheste und späteste Öffnung
+  #############################################
   - if:
       - condition: trigger
         id:
-          - earliest_close_workday
+          - day
+      - condition: state
+        entity_id: !input active
+        state: on
+      - condition: state
+        entity_id: !input workday
+        state: "on"
       - condition: time
-        after: !input earliest_close_workday
+        after: !input earliest_open_workday
+        before: !input latest_open_workday
+      - condition: state
+        entity_id: !input open_off
+        state: "off"
     then:
-      - if:
-          - condition: state
-            entity_id: !input window_sensor
-            state: closed
-        then:
-          - service: cover.set_cover_position
-            data:
-              position: !input window_closed_value
-            target:
-              entity_id: !input shutter
-          - service: input_text.set_value
-            data:
-              value: "Der Rolladen wurde automatisch vollständig geschlossen"
-            target:
-              entity_id: !input text_status
-          - service: input_select.select_option
-            data:
-              option: "Nacht"
-            target:
-              entity_id: !input mode
-        alias: Fenster geschlossen
-      - if:
-          - condition: state
-            entity_id: !input window_sensor
-            state: tilted
-        then:
-          - service: cover.set_cover_position
-            data:
-              position: !input window_tilted_value
-            target:
-              entity_id: !input shutter
-          - service: input_text.set_value
-            data:
-              value: "Der Rolladen wurde automatisch teilweise geschlossen"
-            target:
-              entity_id: !input text_status
-          - service: input_select.select_option
-            data:
-              option: "Nacht"
-            target:
-              entity_id: !input mode
-        alias: Fenster gekippt
-      - if:
-          - condition: state
-            entity_id: !input window_sensor
-            state: open
-        then:
-          - service: cover.set_cover_position
-            data:
-              position: !input window_open_value
-            target:
-              entity_id: !input shutter
-          - service: input_text.set_value
-            data:
-              value: "Der Rolladen wurde nicht geschlossen"
-            target:
-              entity_id: !input text_status
-          - service: input_select.select_option
-            data:
-              option: "Nacht"
-            target:
-              entity_id: !input mode
-        alias: Fenster offen
-    alias: Nacht-Werktag-vor früheste Schließung
+      - service: cover.set_cover_position
+        data:
+          position: 0
+        target:
+          entity_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (zwischen früheste und
+            späteste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+    alias: Tag-Werktag-zwischen früheste und späteste Öffnung
+
+  ##############################################
+  # Tag-Werktag-späteste Öffnung
+  ##############################################
+  - if:
+      - condition: trigger
+        id:
+          - latest_open_workday
+      - condition: state
+        entity_id: !input active
+        state: on
+      - condition: state
+        entity_id: !input workday
+        state: "on"
+      - condition: state
+        entity_id: !input open_off
+        state: "off"
+      - condition: state
+        entity_id: !input mode
+        state: Nacht
+    then:
+      - service: cover.set_cover_position
+        data:
+          position: 0
+        target:
+          entity_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (späteste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+    alias: Tag-Werktag-späteste Öffnung
+
+  ###############################################
+  # Tag-non-Werktag-früheste Öffnung
+  ###############################################
+  - if:
+      - condition: trigger
+        id:
+          - earliest_open_non_workday
+      - condition: state
+        entity_id: !input active
+        state: on
+      - condition: state
+        entity_id: !input workday
+        state: "off"
+      - condition: state
+        entity_id: !input day_night
+        state: "on"
+      - condition: state
+        entity_id: !input open_off
+        state: "off"
+    then:
+      - service: cover.set_cover_position
+        data:
+          position: 0
+        target:
+          entity_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (früheste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+    alias: Tag-non-Werktag-früheste Öffnung
+
+  ###################################################
+  # Tag-non-Werktag-zwischen früheste und späteste Öffnung
+  ###################################################
+  - if:
+      - condition: trigger
+        id:
+          - day
+      - condition: state
+        entity_id: !input active
+        state: on
+      - condition: state
+        entity_id: !input workday
+        state: "off"
+      - condition: time
+        after: !input earliest_open_non_workday
+        before: !input latest_open_non_workday
+      - condition: state
+        entity_id: !input open_off
+        state: "off"
+    then:
+      - service: cover.set_cover_position
+        data:
+          position: 0
+        target:
+          entity_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (zwischen früheste und späteste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+    alias: Tag-non-Werktag-zwischen früheste und späteste Öffnung
+
+  ##################################################
+  #  Tag-non-Werktag-späteste Öffnung
+  ##################################################
+  - if:
+      - condition: trigger
+        id:
+          - latest_open_non_workday
+      - condition: state
+        entity_id: !input active
+        state: on
+      - condition: state
+        entity_id: !input workday
+        state: "off"
+      - condition: state
+        entity_id: !input open_off
+        state: "off"
+      - condition: state
+        entity_id: !input mode
+        state: Nacht
+    then:
+      - service: cover.set_cover_position
+        data:
+          position: 0
+        target:
+          entity_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (späteste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+    alias: Tag-non-Werktag-späteste Öffnung
