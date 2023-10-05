@@ -32,6 +32,21 @@ blueprint:
         entity:
           domain: input_datetime
           multiple: false
+    text_status:
+      name: Statusausgabe
+      description: Statusausgabe als Text, enthält die Information, was der letzte Auslöser war
+      selector:
+        entity:
+          domain: input_text
+          multiple: false
+    mode:
+      name: Modus
+      description: Modusanzeige für den jeweiligen Rolladen (Tag/Nacht)
+      selector:
+        entity:
+          domain: input_select
+          multiple: false
+          
 trigger:
   - platform: time
     at: !input earliest_open_workday
