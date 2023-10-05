@@ -116,7 +116,33 @@ blueprint:
         entity:
           domain: sensor
           multiple: false
-    
+    window_open_value:
+      name: Rolladenstellung bei Fenster offen
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+          mode: slider
+          step: 1.0
+    window_tilted_value:
+      name: Rolladenstellung bei Fenster gekippt
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+          mode: slider
+          step: 1.0
+    window_closed_value:
+      name: Rolladenstellung bei Fenster geschlossen
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+          mode: slider
+          step: 1.0
     text_status:
       name: Statusausgabe
       description: Statusausgabe als Text, enthält die Information, was der letzte Auslöser war
@@ -230,40 +256,3 @@ action:
           entity_id: !input mode
     alias: Tag-Werktag-früheste Öffnung
   
-  ##############################################
-  # Tag-Werktag-zwischen früheste und späteste Öffnung
-  #############################################
-  - if:
-      - condition: trigger
-        id:
-          - day
-      - condition: state
-        entity_id: !input active
-        state: on
-      - condition: state
-        entity_id: !input workday
-        state: "on"
-      - condition: time
-        after: !input earliest_open_workday
-        before: !input latest_open_workday
-      - condition: state
-        entity_id: !input open_off
-        state: "off"
-    then:
-      - service: cover.set_cover_position
-        data:
-          position: 0
-        target:
-          entity_id: !input shutter
-      - service: input_text.set_value
-        data:
-          value: "Der Rolladen wurde automatisch geöffnet (zwischen früheste und
-            späteste Öffnung)"
-        target:
-          entity_id: !input text_status
-      - service: input_select.select_option
-        data:
-          option: "Tag"
-        target:
-          entity_id: !input mode
-    alias: Tag-Werktag-zwischen früheste und späteste Öffnung
