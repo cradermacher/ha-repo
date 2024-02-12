@@ -1,960 +1,1005 @@
 blueprint:
-  name: Automation Rolladen
-  description: "# Rolladen\nAutomation eines Rolladen abhängig von Werktag, Uhrzeit,
-    Fensterstellung.\n\nZur Aktivierung/Deaktivierung der Steuerung kann ein globaler
-    Schalter definiert werden. \nDas Hoch- und Runterfahren kann durch separate Schalter
-    unterbunden werden. \n\nDie Rahmenzeiten (frühestes und spätestes Öffnen und Schließen)
-    werden durch Zeiteinträge definiert, \ndazwischen wird die Bewegung durch die
-    Variable \"es ist Tag\" gesteuert. Diese Variable kann durch \neine separate Automation
-    den eigenen Wünschen entsprechend gesetzt werden.\n\nLink zum Repo [Github](https://github.com/cradermacher/ha-repo/blob/main/blueprints/shutter)\n\nVersion
-    1.0\nDatum 04.10.2023\nsource_url: https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter.yaml\n"
+  name: Automation Rolladen Test
+  description: |
+    # Rolladen
+    Automation eines Rolladen abhängig von Werktag, Uhrzeit, Fensterstellung.
+
+    Zur Aktivierung/Deaktivierung der Steuerung kann ein globaler Schalter definiert werden. 
+    Das Hoch- und Runterfahren kann durch separate Schalter unterbunden werden. 
+
+    Die Rahmenzeiten (frühestes und spätestes Öffnen und Schließen) werden durch Zeiteinträge definiert, 
+    dazwischen wird die Bewegung durch die Variable "es ist Tag" gesteuert. Diese Variable kann durch 
+    eine separate Automation den eigenen Wünschen entsprechend gesetzt werden.
+
+    Link zum Repo [Github](https://github.com/cradermacher/ha-repo/blob/main/blueprints/shutter)
+
+    Version 2.0
+    Datum 12.02.2024
+  source_url: https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter-short.yaml
   domain: automation
   input:
     shutter:
       name: Rolladen
       description: Zu steuernden Rolladen auswählen
       selector:
-        entity:
-          domain:
-          - cover
-          multiple: false
+        device:
+          entity:
+            domain: cover
     workday:
       name: Werktag
       description: Entität die anzeigt ob ein Werktag ist
       selector:
         entity:
-          domain:
-          - binary_sensor
+          domain: binary_sensor
           multiple: false
     day_night:
       name: Es ist Tag
       description: Entität die anzeigt ob es Tag oder Nacht ist
       selector:
         entity:
-          domain:
-          - input_boolean
+          domain: input_boolean
           multiple: false
     active:
       name: Aktiv
-      description: Entität zur Steuerung, ob die gesamte Automation ausgeführt werden
-        soll
+      description: Entität zur Steuerung, ob die gesamte Automation ausgeführt werden soll
       selector:
         entity:
-          domain:
-          - input_boolean
+          domain: input_boolean
           multiple: false
     close_off:
       name: Automatisch Runterfahren ausschalten
       description: Entität, die verhindert, dass der Rolladen automatisch runterfährt
       selector:
         entity:
-          domain:
-          - input_boolean
+          domain: input_boolean
           multiple: false
     open_off:
       name: Automatisch Hochfahren ausschalten
       description: Entität, die verhindert, das der Rolladen automatisch hochfährt
       selector:
         entity:
-          domain:
-          - input_boolean
+          domain: input_boolean
           multiple: false
     earliest_open_workday:
       name: Frühestes Öffnen an Werktagen
       selector:
         entity:
-          domain:
-          - input_datetime
+          domain: input_datetime
           multiple: false
     earliest_open_non_workday:
       name: Frühestes Öffnen an nicht Werktagen
       selector:
         entity:
-          domain:
-          - input_datetime
+          domain: input_datetime
           multiple: false
     latest_open_workday:
       name: Spätestes Öffnen an Werktagen
       selector:
         entity:
-          domain:
-          - input_datetime
+          domain: input_datetime
           multiple: false
     latest_open_non_workday:
       name: Spätestes Öffnen an nicht Werktagen
       selector:
         entity:
-          domain:
-          - input_datetime
+          domain: input_datetime
           multiple: false
     earliest_close_workday:
       name: Frühestes Schließen an Werktagen
       selector:
         entity:
-          domain:
-          - input_datetime
+          domain: input_datetime
           multiple: false
     earliest_close_non_workday:
       name: Frühestes Schließen an nicht Werktagen
       selector:
         entity:
-          domain:
-          - input_datetime
+          domain: input_datetime
           multiple: false
     latest_close_workday:
       name: Spätestes Schließen an Werktagen
       selector:
         entity:
-          domain:
-          - input_datetime
+          domain: input_datetime
           multiple: false
     latest_close_non_workday:
       name: Spätestes Schließen an nicht Werktagen
       selector:
         entity:
-          domain:
-          - input_datetime
+          domain: input_datetime
           multiple: false
     window_sensor:
       name: Fenstersensor
-      description: Entität für die Ermittlung der Fensterstellung (offen, gekippt,
-        geschlossen)
+      description: Entität für die Ermittlung der Fensterstellung (offen, gekippt, geschlossen)
       selector:
         entity:
-          domain:
-          - sensor
+          domain: sensor
           multiple: false
-    window_open_value:
-      name: Rolladenstellung bei Fenster offen
+    open_value:
+      name: Rolladenstellung für Öffnen (morgens)
+      default: 0
       selector:
         number:
-          min: 0.0
-          max: 100.0
-          unit_of_measurement: '%'
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+          mode: slider
+          step: 1.0
+    window_open_value:
+      name: Rolladenstellung bei Fenster offen
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
           mode: slider
           step: 1.0
     window_tilted_value:
       name: Rolladenstellung bei Fenster gekippt
+      default: 85
       selector:
         number:
-          min: 0.0
-          max: 100.0
-          unit_of_measurement: '%'
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
           mode: slider
           step: 1.0
     window_closed_value:
       name: Rolladenstellung bei Fenster geschlossen
+      default: 100
       selector:
         number:
-          min: 0.0
-          max: 100.0
-          unit_of_measurement: '%'
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
           mode: slider
           step: 1.0
     text_status:
       name: Statusausgabe
-      description: Statusausgabe als Text, enthält die Information, was der letzte
-        Auslöser war
+      description: Statusausgabe als Text, enthält die Information, was der letzte Auslöser war
       selector:
         entity:
-          domain:
-          - input_text
+          domain: input_text
           multiple: false
     mode:
       name: Modus
       description: Modusanzeige für den jeweiligen Rolladen (Tag/Nacht)
       selector:
         entity:
-          domain:
-          - input_select
+          domain: input_select
           multiple: false
-  source_url: https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter.yaml
+
+variables:
+  shutter: !input shutter
+  active: !input active
+  workday: !input workday
+  day_night: !input day_night
+  close_off: !input close_off
+  open_off: !input open_off
+  window_sensor: !input window_sensor
+  earliest_open_workday: !input earliest_open_workday
+  latest_open_workday: !input latest_open_workday
+  earliest_close_workday: !input earliest_close_workday
+  latest_close_workday: !input latest_close_workday
+  earliest_open_non_workday: !input earliest_open_non_workday
+  latest_open_non_workday: !input latest_open_non_workday
+  earliest_close_non_workday: !input earliest_close_non_workday
+  latest_close_non_workday: !input latest_close_non_workday
+  mode: !input mode
+  text_status: !input text_status
+
+
 trigger:
-- platform: time
-  at: !input earliest_open_workday
-  id: earliest_open_workday
-- platform: time
-  at: !input earliest_open_non_workday
-  id: earliest_open_non_workday
-- platform: time
-  at: !input latest_open_workday
-  id: latest_open_workday
-- platform: time
-  at: !input latest_open_non_workday
-  id: latest_open_non_workday
-- platform: time
-  at: !input earliest_close_workday
-  id: earliest_close_workday
-- platform: time
-  at: !input earliest_close_non_workday
-  id: earliest_close_non_workday
-- platform: time
-  at: !input latest_close_workday
-  id: latest_close_workday
-- platform: time
-  at: !input latest_close_non_workday
-  id: latest_close_non_workday
-- platform: state
-  entity_id: !input day_night
-  from: 'on'
-  to: 'off'
-  id: night
-- platform: state
-  entity_id: !input day_night
-  from: 'off'
-  to: 'on'
-  id: day
-- platform: state
-  entity_id: !input window_sensor
-  to: open
-  id: window_open
-- platform: state
-  entity_id: !input window_sensor
-  to: tilted
-  id: window_tilted
-- platform: state
-  entity_id: !input window_sensor
-  to: closed
-  id: window_closed
+  - platform: time
+    at: !input earliest_open_workday
+    id: earliest_open_workday
+
+  - platform: time
+    at: !input earliest_open_non_workday
+    id: earliest_open_non_workday
+
+  - platform: time
+    at: !input latest_open_workday
+    id: latest_open_workday
+
+  - platform: time
+    at: !input latest_open_non_workday
+    id: latest_open_non_workday
+
+  - platform: time
+    at: !input earliest_close_workday
+    id: earliest_close_workday
+
+  - platform: time
+    at: !input earliest_close_non_workday
+    id: earliest_close_non_workday
+
+  - platform: time
+    at: !input latest_close_workday
+    id: latest_close_workday
+
+  - platform: time
+    at: !input latest_close_non_workday
+    id: latest_close_non_workday
+
+  - platform: state
+    entity_id: !input day_night
+    from: "on"
+    to: "off"
+    id: night
+
+  - platform: state
+    entity_id: !input day_night
+    from: "off"
+    to: "on"
+    id: day
+
+  - platform: state
+    entity_id: !input window_sensor
+    to: "open"
+    id: window_opened
+
+  - platform: state
+    entity_id: !input window_sensor
+    to: "tilted"
+    id: window_tilted
+
+  - platform: state
+    entity_id: !input window_sensor
+    to: "closed"
+    id: window_closed
+
 action:
-- if:
-  - condition: trigger
-    id:
-    - earliest_open_workday
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'on'
-  - condition: state
-    entity_id: !input day_night
-    state: 'on'
-  - condition: state
-    entity_id: !input open_off
-    state: 'off'
-  then:
-  - service: cover.set_cover_position
-    data:
-      position: 0
-    target:
-      entity_id: !input shutter
-  - service: input_text.set_value
-    data:
-      value: Der Rolladen wurde automatisch geöffnet (früheste Öffnung)
-    target:
-      entity_id: !input text_status
-  - service: input_select.select_option
-    data:
-      option: Tag
-    target:
-      entity_id: !input mode
-  alias: Tag-Werktag-früheste Öffnung
-- if:
-  - condition: trigger
-    id:
-    - day
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'on'
-  - condition: time
-    after: !input earliest_open_workday
-    before: !input latest_open_workday
-  - condition: state
-    entity_id: !input open_off
-    state: 'off'
-  then:
-  - service: cover.set_cover_position
-    data:
-      position: 0
-    target:
-      entity_id: !input shutter
-  - service: input_text.set_value
-    data:
-      value: Der Rolladen wurde automatisch geöffnet (zwischen früheste und späteste
-        Öffnung)
-    target:
-      entity_id: !input text_status
-  - service: input_select.select_option
-    data:
-      option: Tag
-    target:
-      entity_id: !input mode
-  alias: Tag-Werktag-zwischen früheste und späteste Öffnung
-- if:
-  - condition: trigger
-    id:
-    - latest_open_workday
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'on'
-  - condition: state
-    entity_id: !input open_off
-    state: 'off'
-  - condition: state
-    entity_id: !input mode
-    state: Nacht
-  then:
-  - service: cover.set_cover_position
-    data:
-      position: 0
-    target:
-      entity_id: !input shutter
-  - service: input_text.set_value
-    data:
-      value: Der Rolladen wurde automatisch geöffnet (späteste Öffnung)
-    target:
-      entity_id: !input text_status
-  - service: input_select.select_option
-    data:
-      option: Tag
-    target:
-      entity_id: !input mode
-  alias: Tag-Werktag-späteste Öffnung
-- if:
-  - condition: trigger
-    id:
-    - earliest_open_non_workday
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'off'
-  - condition: state
-    entity_id: !input day_night
-    state: 'on'
-  - condition: state
-    entity_id: !input open_off
-    state: 'off'
-  then:
-  - service: cover.set_cover_position
-    data:
-      position: 0
-    target:
-      entity_id: !input shutter
-  - service: input_text.set_value
-    data:
-      value: Der Rolladen wurde automatisch geöffnet (früheste Öffnung)
-    target:
-      entity_id: !input text_status
-  - service: input_select.select_option
-    data:
-      option: Tag
-    target:
-      entity_id: !input mode
-  alias: Tag-non-Werktag-früheste Öffnung
-- if:
-  - condition: trigger
-    id:
-    - day
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'off'
-  - condition: time
-    after: !input earliest_open_non_workday
-    before: !input latest_open_non_workday
-  - condition: state
-    entity_id: !input open_off
-    state: 'off'
-  then:
-  - service: cover.set_cover_position
-    data:
-      position: 0
-    target:
-      entity_id: !input shutter
-  - service: input_text.set_value
-    data:
-      value: Der Rolladen wurde automatisch geöffnet (zwischen früheste und späteste
-        Öffnung)
-    target:
-      entity_id: !input text_status
-  - service: input_select.select_option
-    data:
-      option: Tag
-    target:
-      entity_id: !input mode
-  alias: Tag-non-Werktag-zwischen früheste und späteste Öffnung
-- if:
-  - condition: trigger
-    id:
-    - latest_open_non_workday
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'off'
-  - condition: state
-    entity_id: !input open_off
-    state: 'off'
-  - condition: state
-    entity_id: !input mode
-    state: Nacht
-  then:
-  - service: cover.set_cover_position
-    data:
-      position: 0
-    target:
-      entity_id: !input shutter
-  - service: input_text.set_value
-    data:
-      value: Der Rolladen wurde automatisch geöffnet (späteste Öffnung)
-    target:
-      entity_id: !input text_status
-  - service: input_select.select_option
-    data:
-      option: Tag
-    target:
-      entity_id: !input mode
-  alias: Tag-non-Werktag-späteste Öffnung
-- if:
-  - condition: trigger
-    id:
-    - earliest_close_workday
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'on'
-  - condition: state
-    entity_id: !input day_night
-    state: 'off'
-  - condition: time
-    after: !input earliest_close_workday
-  - condition: state
-    entity_id: !input close_off
-    state: 'off'
-  then:
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: closed
-    then:
+- choose:
+############################################
+# Tag-Werktag-früheste Öffnung 0
+############################################
+  - alias: tag-werktag früheste öffnung
+    conditions:
+    - and:
+      - condition: trigger
+        id: earliest_open_workday
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(day_night, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(open_off, ''off'')}}'
+    sequence:
     - service: cover.set_cover_position
       data:
-        position: !input window_closed_value
+        position: !input open_value
       target:
-        entity_id: !input shutter
+        device_id: !input shutter
     - service: input_text.set_value
       data:
-        value: Der Rolladen wurde automatisch vollständig geschlossen
+        value: "Der Rolladen wurde automatisch geöffnet (früheste Öffnung)"
       target:
         entity_id: !input text_status
     - service: input_select.select_option
       data:
-        option: Nacht
+        option: "Tag"
       target:
         entity_id: !input mode
-    alias: Fenster geschlossen
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: tilted
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_tilted_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch teilweise geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster gekippt
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: open
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_open_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde nicht geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster offen
-  alias: Nacht-Werktag-vor früheste Schließung
-- if:
-  - condition: trigger
-    id:
-    - night
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'on'
-  - condition: time
-    before: !input latest_close_workday
-    after: !input earliest_close_workday
-  - condition: state
-    entity_id: !input close_off
-    state: 'off'
-  then:
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: closed
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_closed_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch vollständig geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster geschlossen
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: tilted
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_tilted_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch teilweise geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster gekippt
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: open
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_open_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde nicht geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster offen
-  alias: Nacht-Werktag-zwischen früheste und späteste Schließung
-- if:
-  - condition: trigger
-    id:
-    - latest_close_workday
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'on'
-  - condition: state
-    entity_id: !input close_off
-    state: 'off'
-  - condition: state
-    entity_id: !input mode
-    state: Tag
-  then:
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: closed
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_closed_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch vollständig geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster geschlossen
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: tilted
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_tilted_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch teilweise geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster gekippt
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: open
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_open_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde nicht geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster offen
-  alias: Nacht-werktag-späteste Schließung
-- if:
-  - condition: trigger
-    id:
-    - earliest_close_non_workday
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'on'
-  - condition: state
-    entity_id: !input day_night
-    state: 'off'
-  - condition: time
-    after: !input earliest_close_workday
-  - condition: state
-    entity_id: !input close_off
-    state: 'off'
-  then:
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: closed
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_closed_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch vollständig geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster geschlossen
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: tilted
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_tilted_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch teilweise geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster gekippt
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: open
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_open_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde nicht geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster offen
-  alias: Nacht-non-Werktag-vor früheste Schließung
-- if:
-  - condition: trigger
-    id:
-    - night
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'off'
-  - condition: time
-    before: !input latest_close_non_workday
-    after: !input earliest_close_non_workday
-  - condition: state
-    entity_id: !input close_off
-    state: 'off'
-  then:
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: closed
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_closed_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch vollständig geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster geschlossen
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: tilted
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_tilted_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch teilweise geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster gekippt
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: open
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_open_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde nicht geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster offen
-  alias: Nacht-non-Werktag-zwischen früheste und späteste Schließung
-- if:
-  - condition: trigger
-    id:
-    - latest_close_non_workday
-  - condition: state
-    entity_id: !input active
-    state: true
-  - condition: state
-    entity_id: !input workday
-    state: 'off'
-  - condition: state
-    entity_id: !input close_off
-    state: 'off'
-  - condition: state
-    entity_id: !input mode
-    state: Tag
-  then:
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: closed
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_closed_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch vollständig geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster geschlossen
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: tilted
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_tilted_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde automatisch teilweise geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster gekippt
-  - if:
-    - condition: state
-      entity_id: !input window_sensor
-      state: open
-    then:
-    - service: cover.set_cover_position
-      data:
-        position: !input window_open_value
-      target:
-        entity_id: !input shutter
-    - service: input_text.set_value
-      data:
-        value: Der Rolladen wurde nicht geschlossen
-      target:
-        entity_id: !input text_status
-    - service: input_select.select_option
-      data:
-        option: Nacht
-      target:
-        entity_id: !input mode
-    alias: Fenster offen
-  alias: Nacht-non-Werktag-späteste Schließung
-- if:
-  - condition: trigger
-    id:
-    - window_open
-  - condition: state
-    entity_id: !input mode
-    state: Nacht
-  - condition: state
-    entity_id: !input close_off
-    state: 'off'
-  then:
-  - service: cover.set_cover_position
-    data:
-      position: !input window_open_value
-    target:
-      entity_id: !input shutter
-  alias: Trigger_fenster_offen
-- if:
-  - condition: trigger
-    id:
-    - window_titled
-  - condition: state
-    entity_id: !input mode
-    state: Nacht
-  - condition: state
-    entity_id: !input close_off
-    state: 'off'
-  then:
-  - service: cover.set_cover_position
-    data:
-      position: !input window_tilted_value
-    target:
-      entity_id: !input shutter
-  alias: Trigger_fenster_gekippt
-- if:
-  - condition: trigger
-    id:
-    - window_closed
-  - condition: state
-    entity_id: !input mode
-    state: Nacht
-  - condition: state
-    entity_id: !input close_off
-    state: 'off'
-  then:
-  - service: cover.set_cover_position
-    data:
-      position: !input window_closed_value
-    target:
-      entity_id: !input shutter
-  alias: Trigger_fenster_geschlossen
+      
+##############################################
+# Tag-Werktag-zwischen früheste und späteste Öffnung 1
+#############################################
+  - alias: Tag-Werktag-zwischen früheste und späteste Öffnung
+    conditions:
+      and:
+      - condition: trigger
+        id: day
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''on'')}}'
+      - and 
+        - '{{ now() >= today_at(states(earliest_open_workday))}}'
+        - '{{ now() <= today_at(states(latest_open_workday))}}'
+      - condition: template
+        value_template: '{{is_state(open_off, ''off'')}}'
+    sequence:
+      - service: cover.set_cover_position
+        data:
+          position: !input open_value
+        target:
+          device_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (zwischen früheste und
+            späteste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+    
+##############################################
+# Tag-Werktag-späteste Öffnung 2
+##############################################
+  - alias: Tag-Werktag-späteste Öffnung
+    conditions:
+      and:
+      - condition: trigger
+        id: latest_open_workday
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(open_off, ''off'')}}'
+      - condition: template
+        value_template: '{{is_state(mode, ''Nacht'')}}'
+    sequence:
+      - service: cover.set_cover_position
+        data:
+          position: !input open_value
+        target:
+          device_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (späteste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+
+###############################################
+# Tag-non-Werktag-früheste Öffnung 3
+###############################################
+  - alias: Tag-non-Werktag-früheste Öffnung
+    conditions:
+      and:
+      - condition: trigger
+        id: earliest_open_non_workday
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}' 
+      - condition: template
+        value_template: '{{is_state(workday, ''off'')}}' 
+      - condition: template
+        value_template: '{{is_state(day_night, ''on'')}}' 
+      - condition: template
+        value_template: '{{is_state(open_off, ''off'')}}'
+    sequence:
+      - service: cover.set_cover_position
+        data:
+          position: !input open_value
+        target:
+          device_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (früheste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+
+###################################################
+# Tag-non-Werktag-zwischen früheste und späteste Öffnung 4
+###################################################
+  - alias: Tag-non-Werktag-zwischen früheste und späteste Öffnung
+    conditions:
+      and:
+      - condition: trigger
+        id: day
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''off'')}}'
+      - and 
+        - '{{ now() >= today_at(states(earliest_open_non_workday))}}'
+        - '{{ now() <= today_at(states(latest_open_non_workday))}}'
+      - condition: template
+        value_template: '{{is_state(open_off, ''off'')}}'
+    sequence:
+      - service: cover.set_cover_position
+        data:
+          position: !input open_value
+        target:
+          device_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (zwischen früheste und späteste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+
+##################################################
+#  Tag-non-Werktag-späteste Öffnung 5
+##################################################
+  - alias: Tag-non-Werktag-späteste Öffnung
+    conditions:
+      and:
+      - condition: trigger
+        id: latest_open_non_workday
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''off'')}}'
+      - condition: template
+        value_template: '{{is_state(open_off, ''off'')}}'
+      - condition: template
+        value_template: '{{is_state(mode, ''Nacht'')}}'
+    sequence:
+      - service: cover.set_cover_position
+        data:
+          position: !input open_value
+        target:
+          device_id: !input shutter
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde automatisch geöffnet (späteste Öffnung)"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+
+################################################
+# Nacht-Werktag früheste Schließung 6
+################################################
+  - alias: Nacht-Werktag früheste Schließung
+    conditions:
+      and:
+      - condition: trigger
+        id: earliest_close_workday
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(day_night, ''off'')}}'
+      - condition: template
+        value_template: '{{is_state(close_off, ''off'')}}'
+      - '{{ now() >= today_at(states(earliest_close_workday))}}'
+    sequence:
+      - choose:
+        - alias: Fenster geschlossen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: closed
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster gekippt
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: tilted
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_tilted_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch teilweise geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster offen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: open
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_open_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde nicht geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+          
+
+######################################################
+# Nacht-Werktag-zwischen früheste und späteste Schließung 7
+######################################################
+  - alias: Nacht-Werktag-zwischen früheste und späteste Schließung
+    conditions:
+      and:
+      - condition: trigger
+        id: night
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''on'')}}'
+      - '{{ now() >= today_at(states(earliest_close_workday)) and now() <= today_at(states(latest_close_workday))}}'
+      - condition: template
+        value_template: '{{is_state(close_off, ''off'')}}'
+    sequence:
+      - choose:
+        - alias: Fenster geschlossen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: closed
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster gekippt
+          conditions: 
+            - condition: state
+              entity_id: !input window_sensor
+              state: tilted
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_tilted_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch teilweise geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster offen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: open
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_open_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde nicht geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        
+####################################################
+# Nacht-werktag-späteste Schließung 8
+####################################################
+  - alias: Nacht-werktag-späteste Schließung  
+    conditions:
+      and:
+      - condition: trigger
+        id: latest_close_workday
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''on'')}}' 
+      - condition: template
+        value_template: '{{is_state(close_off, ''off'')}}'
+      - condition: template
+        value_template: '{{is_state(mode, ''Tag'')}}'
+    sequence:
+      choose:
+        - alias: Fenster geschlossen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: closed
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster gekippt
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: tilted
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_tilted_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch teilweise geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster offen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: open
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_open_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde nicht geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        
+##################################################
+# Nacht-non-Werktag-vor früheste Schließung 9
+##################################################
+  - alias: Nacht-non-Werktag-vor früheste Schließung
+    conditions:
+      and:
+      - condition: trigger
+        id: earliest_close_non_workday
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''off'')}}'
+      - condition: template
+        value_template: '{{is_state(day_night, ''off'')}}'
+      - '{{ now() >= today_at(states(earliest_close_workday)) }}'
+      - condition: template
+        value_template: '{{is_state(close_off, ''off'')}}'
+    sequence:
+      choose:
+        - alias: Fenster geschlossen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: closed
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster gekippt
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: tilted
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_tilted_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch teilweise geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster offen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: open
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_open_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde nicht geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+
+##################################################
+# Nacht-non-Werktag-zwischen früheste und späteste Schließung 10
+##################################################
+  - alias: nacht non Wertag zwischen früheste und späteste schließung
+    conditions:
+      - and:
+        - condition: trigger
+          id: night
+        - condition: template
+          value_template: '{{is_state(active, ''on'')}}'
+        - condition: template
+          value_template: '{{is_state(workday, ''off'')}}'
+        - condition: template
+          value_template: '{{is_state(close_off, ''off'')}}'
+        - '{{ now() >= today_at(states(earliest_close_non_workday)) and now() <= today_at(states(latest_close_non_workday))}}'
+    sequence:
+      - choose:
+        - alias: Fenster geschlossen
+          conditions:
+            - condition: template
+              value_template: '{{is_state(window_sensor, ''closed'')}}'
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode  
+        - alias: Fenster gekippt
+          conditions:
+            - condition: template
+              value_template: '{{is_state(window_sensor, ''tilted'')}}'
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_tilted_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch teilweise geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster offen
+          conditions:
+            - condition: template
+              value_template: '{{is_state(window_sensor, ''open'')}}'
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_open_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde nicht geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+
+########################################################
+# Nacht-non-Werktag-späteste Schließung 11
+########################################################
+  - alias: Nacht-non-Werktag-späteste Schließung
+    conditions:
+      and:
+      - condition: trigger
+        id: latest_close_non_workday
+      - condition: template
+        value_template: '{{is_state(active, ''on'')}}'
+      - condition: template
+        value_template: '{{is_state(workday, ''off'')}}' 
+      - condition: template
+        value_template: '{{is_state(close_off, ''off'')}}'
+      - condition: template
+        value_template: '{{is_state(mode, ''Tag'')}}'
+    sequence:
+      choose:
+        - alias: Fenster geschlossen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: closed
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster gekippt
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: tilted
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_tilted_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch teilweise geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Fenster offen
+          conditions:
+            - condition: state
+              entity_id: !input window_sensor
+              state: open
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_open_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde nicht geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+
+##########################################
+# Trigger_fenster_offen 12
+##########################################  
+  - alias: Trigger fenster offen
+    conditions:
+      and:
+      - condition: trigger
+        id: window_opened
+      - condition: template
+        value_template: '{{is_state(mode, ''Nacht'')}}'
+      - condition: template
+        value_template: '{{is_state(close_off, ''off'')}}'
+    sequence:
+      - service: cover.set_cover_position
+        data:
+          position: !input window_open_value
+        target:
+          device_id: !input shutter
+
+
+#########################################
+# Trigger_fenster_gekippt 13
+#########################################
+  - alias: Trigger_fenster_gekippt
+    conditions:
+      and:
+      - condition: trigger
+        id: window_titled
+      - condition: template
+        value_template: '{{is_state(mode, ''Nacht'')}}'
+      - condition: template
+        value_template: '{{is_state(close_off, ''off'')}}'
+    sequence:
+      - service: cover.set_cover_position
+        data:
+          position: !input window_tilted_value
+        target:
+          device_id: !input shutter
+    
+
+#########################################
+# Trigger_fenster_geschlossen 14
+#########################################
+  - alias: Trigger_fenster_geschlossen
+    conditions:
+      and:
+      - condition: trigger
+        id: window_closed
+      - condition: template
+        value_template: '{{is_state(mode, ''Nacht'')}}'
+      - condition: template
+        value_template: '{{is_state(close_off, ''off'')}}'
+    sequence:
+      - service: cover.set_cover_position
+        data:
+          position: !input window_closed_value
+        target:
+          device_id: !input shutter
+  default:
+    - stop: Keine Änderung am aktuellen Status  
