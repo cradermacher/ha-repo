@@ -970,7 +970,7 @@ action:
     conditions:
       and:
       - condition: trigger
-        id: window_titled
+        id: window_tilted
       - condition: template
         value_template: '{{is_state(mode, ''Nacht'')}}'
       - condition: template
