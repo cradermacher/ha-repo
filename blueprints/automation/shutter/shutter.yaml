@@ -13,8 +13,14 @@ blueprint:
 
     Link zum Repo [Github](https://github.com/cradermacher/ha-repo/blob/main/blueprints/shutter)
 
-    Version 2.0
-    Datum 12.02.2024
+    Version 2.1
+    Datum 13.02.2024
+
+    History: 
+    12.02.2024: Als Version 2.0 veröffentlicht.
+    13.02.2024: Fehler in den Bedingungen beim öffnen korrigiert
+
+    
   source_url: https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter-short.yaml
   domain: automation
   input:
