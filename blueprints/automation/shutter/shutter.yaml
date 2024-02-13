@@ -303,7 +303,7 @@ action:
         value_template: '{{is_state(active, ''on'')}}'
       - condition: template
         value_template: '{{is_state(workday, ''on'')}}'
-      - '{{ now() >= today_at(states(earliest_open_workday))}}' and '{{ now() <= today_at(states(latest_open_workday))}}'
+      - '{{ now() >= today_at(states(earliest_open_workday)) and now() <= today_at(states(latest_open_workday)) }}'
       - condition: template
         value_template: '{{is_state(open_off, ''off'')}}'
     sequence:
@@ -402,7 +402,7 @@ action:
         value_template: '{{is_state(active, ''on'')}}'
       - condition: template
         value_template: '{{is_state(workday, ''off'')}}'
-      - '{{ now() >= today_at(states(earliest_open_non_workday))}}' and '{{ now() <= today_at(states(latest_open_non_workday))}}'
+      - '{{ now() >= today_at(states(earliest_open_non_workday)) and now() <= today_at(states(latest_open_non_workday)) }}'
       - condition: template
         value_template: '{{is_state(open_off, ''off'')}}'
     sequence:
@@ -551,7 +551,7 @@ action:
         value_template: '{{is_state(active, ''on'')}}'
       - condition: template
         value_template: '{{is_state(workday, ''on'')}}'
-      - '{{ now() >= today_at(states(earliest_close_workday)) and now() <= today_at(states(latest_close_workday))}}'
+      - '{{ now() >= today_at(states(earliest_close_workday)) and now() <= today_at(states(latest_close_workday)) }}'
       - condition: template
         value_template: '{{is_state(close_off, ''off'')}}'
     sequence:
@@ -799,7 +799,7 @@ action:
           value_template: '{{is_state(workday, ''off'')}}'
         - condition: template
           value_template: '{{is_state(close_off, ''off'')}}'
-        - '{{ now() >= today_at(states(earliest_close_non_workday)) and now() <= today_at(states(latest_close_non_workday))}}'
+        - '{{ now() >= today_at(states(earliest_close_non_workday)) and now() <= today_at(states(latest_close_non_workday)) }}'
     sequence:
       - choose:
         - alias: Fenster geschlossen
