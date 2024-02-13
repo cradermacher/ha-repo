@@ -297,9 +297,7 @@ action:
         value_template: '{{is_state(active, ''on'')}}'
       - condition: template
         value_template: '{{is_state(workday, ''on'')}}'
-      - and 
-        - '{{ now() >= today_at(states(earliest_open_workday))}}'
-        - '{{ now() <= today_at(states(latest_open_workday))}}'
+      - '{{ now() >= today_at(states(earliest_open_workday))}}' and '{{ now() <= today_at(states(latest_open_workday))}}'
       - condition: template
         value_template: '{{is_state(open_off, ''off'')}}'
     sequence:
@@ -398,9 +396,7 @@ action:
         value_template: '{{is_state(active, ''on'')}}'
       - condition: template
         value_template: '{{is_state(workday, ''off'')}}'
-      - and 
-        - '{{ now() >= today_at(states(earliest_open_non_workday))}}'
-        - '{{ now() <= today_at(states(latest_open_non_workday))}}'
+      - '{{ now() >= today_at(states(earliest_open_non_workday))}}' and '{{ now() <= today_at(states(latest_open_non_workday))}}'
       - condition: template
         value_template: '{{is_state(open_off, ''off'')}}'
     sequence:
