@@ -13,12 +13,13 @@ blueprint:
 
     Link zum Repo [Github](https://github.com/cradermacher/ha-repo/blob/main/blueprints/shutter)
 
-    Version 2.1
-    Datum 13.02.2024
+    Version 2.2
+    Datum 29.06.2024
 
     History: 
     12.02.2024: Als Version 2.0 veröffentlicht.
     13.02.2024: Fehler in den Bedingungen beim öffnen korrigiert
+    29.06.2024: In die Bedingungen eine Prüfung eingebaut, ob ein Fenstersensor gesetzt ist.
 
     
   source_url: https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter-short.yaml
@@ -117,6 +118,7 @@ blueprint:
     window_sensor:
       name: Fenstersensor
       description: Entität für die Ermittlung der Fensterstellung (offen, gekippt, geschlossen)
+      default: []
       selector:
         entity:
           domain: sensor
@@ -255,6 +257,7 @@ trigger:
     entity_id: !input window_sensor
     to: "closed"
     id: window_closed
+
 
 action:
 - choose:
@@ -476,9 +479,8 @@ action:
       - choose:
         - alias: Fenster geschlossen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: closed
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''closed'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -497,9 +499,8 @@ action:
                 entity_id: !input mode
         - alias: Fenster gekippt
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: tilted
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''tilted'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -518,9 +519,8 @@ action:
                 entity_id: !input mode
         - alias: Fenster offen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: open
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''open'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -558,9 +558,8 @@ action:
       - choose:
         - alias: Fenster geschlossen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: closed
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''closed'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -578,10 +577,9 @@ action:
               target:
                 entity_id: !input mode
         - alias: Fenster gekippt
-          conditions: 
-            - condition: state
-              entity_id: !input window_sensor
-              state: tilted
+          conditions:
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''tilted'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -600,9 +598,8 @@ action:
                 entity_id: !input mode
         - alias: Fenster offen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: open
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''open'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -640,9 +637,8 @@ action:
       choose:
         - alias: Fenster geschlossen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: closed
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''closed'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -661,9 +657,8 @@ action:
                 entity_id: !input mode
         - alias: Fenster gekippt
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: tilted
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''tilted'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -682,9 +677,8 @@ action:
                 entity_id: !input mode
         - alias: Fenster offen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: open
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''open'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -723,9 +717,8 @@ action:
       choose:
         - alias: Fenster geschlossen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: closed
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''closed'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -744,9 +737,8 @@ action:
                 entity_id: !input mode
         - alias: Fenster gekippt
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: tilted
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''tilted'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -765,9 +757,8 @@ action:
                 entity_id: !input mode
         - alias: Fenster offen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: open
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''open'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -805,7 +796,7 @@ action:
         - alias: Fenster geschlossen
           conditions:
             - condition: template
-              value_template: '{{is_state(window_sensor, ''closed'')}}'
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''closed'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -825,7 +816,7 @@ action:
         - alias: Fenster gekippt
           conditions:
             - condition: template
-              value_template: '{{is_state(window_sensor, ''tilted'')}}'
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''tilted'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -845,7 +836,7 @@ action:
         - alias: Fenster offen
           conditions:
             - condition: template
-              value_template: '{{is_state(window_sensor, ''open'')}}'
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''open'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -883,9 +874,8 @@ action:
       choose:
         - alias: Fenster geschlossen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: closed
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''closed'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -904,9 +894,8 @@ action:
                 entity_id: !input mode
         - alias: Fenster gekippt
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: tilted
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''tilted'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -925,9 +914,8 @@ action:
                 entity_id: !input mode
         - alias: Fenster offen
           conditions:
-            - condition: state
-              entity_id: !input window_sensor
-              state: open
+            - condition: template
+              value_template: '{{( (window_sensor != []) and (is_state(window_sensor, ''open'') ) )}}'
           sequence:
             - service: cover.set_cover_position
               data:
@@ -1003,5 +991,30 @@ action:
           position: !input window_closed_value
         target:
           device_id: !input shutter
+
+
+######################################
+# Trigger Positionsänderung 15
+######################################
+  - alias: Trigger_shutter_moved
+    conditions:
+      and:
+      - condition: trigger
+        id: shutter_moved
+      - condition: template
+        value_template: '{{is_state(mode, ''Nacht'')}}'
+      - '{{ now() >= today_at(states(earliest_open_non_workday)) and now() <= today_at(states(latest_open_non_workday)) }}'
+    sequence:
+      - service: input_text.set_value
+        data:
+          value: "Der Rolladen wurde manuell bedient"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option  
+        data:
+          option: "Manuell"
+        target:
+          entity_id: !input mode
+
   default:
-    - stop: Keine Änderung am aktuellen Status  
+    - stop: Keine Änderung am aktuellen Status
