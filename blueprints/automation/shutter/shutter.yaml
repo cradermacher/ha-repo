@@ -19,10 +19,12 @@ blueprint:
     History: 
     12.02.2024: Als Version 2.0 veröffentlicht.
     13.02.2024: Fehler in den Bedingungen beim öffnen korrigiert
-    29.06.2024: In die Bedingungen eine Prüfung eingebaut, ob ein Fenstersensor gesetzt ist.
+    29.06.2024: In die Bedingungen eine Prüfung eingebaut, ob ein Fenstersensor gesetzt ist. Wenn keiner gesetzt ist, wird der Rolladen in den Zustand Fenster zu gefahren
+    30.06.2024: Trigger erstellt, der bei manueller Bedienung des Rolladens einen Status setzt, so dass die Fenstersensorautomatik nicht mehr akticiert wird.
+    01.07.2024: Trigger erstellt, der den Status "manuell" Nachts um 12 und Mittags um 12 wieder zurücksetzt.
 
-    
-  source_url: https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter-short.yaml
+  source_url: https://github.com/cradermacher/ha-repo/blob/main/blueprints/automation/shutter/shutter.yaml
+  
   domain: automation
   input:
     shutter:
@@ -32,6 +34,12 @@ blueprint:
         device:
           entity:
             domain: cover
+    shutter_entity:
+      name: Level
+      description: Variable für den Level auswählen
+      selector:
+        entity:
+          domain: cover
     workday:
       name: Werktag
       description: Entität die anzeigt ob ein Werktag ist
@@ -258,6 +266,17 @@ trigger:
     to: "closed"
     id: window_closed
 
+  - platform: state
+    entity_id: !input shutter_entity
+    id: shutter_moved
+
+  - platform: time
+    at: "12:00:00"
+    id: Mittag
+
+  - platform: time
+    at: "00:01:00"
+    id: Mitternacht
 
 action:
 - choose:
@@ -537,6 +556,26 @@ action:
                 option: "Nacht"
               target:
                 entity_id: !input mode
+        - alias: Kein Fenstersensor
+          conditions:
+            - condition: template
+              value_template: '{{ (window_sensor == []) }}'
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
           
 
 ######################################################
@@ -616,6 +655,26 @@ action:
                 option: "Nacht"
               target:
                 entity_id: !input mode
+        - alias: Kein Fenstersensor
+          conditions:
+            - condition: template
+              value_template: '{{ (window_sensor == []) }}'
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
         
 ####################################################
 # Nacht-werktag-späteste Schließung 8
@@ -688,6 +747,26 @@ action:
             - service: input_text.set_value
               data:
                 value: "Der Rolladen wurde nicht geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Kein Fenstersensor
+          conditions:
+            - condition: template
+              value_template: '{{ (window_sensor == []) }}'
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
               target:
                 entity_id: !input text_status
             - service: input_select.select_option
@@ -775,6 +854,26 @@ action:
                 option: "Nacht"
               target:
                 entity_id: !input mode
+        - alias: Kein Fenstersensor
+          conditions:
+            - condition: template
+              value_template: '{{ (window_sensor == []) }}'
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
 
 ##################################################
 # Nacht-non-Werktag-zwischen früheste und späteste Schließung 10
@@ -846,6 +945,26 @@ action:
             - service: input_text.set_value
               data:
                 value: "Der Rolladen wurde nicht geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
+        - alias: Kein Fenstersensor
+          conditions:
+            - condition: template
+              value_template: '{{ (window_sensor == []) }}'
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
               target:
                 entity_id: !input text_status
             - service: input_select.select_option
@@ -932,6 +1051,26 @@ action:
                 option: "Nacht"
               target:
                 entity_id: !input mode
+        - alias: Kein Fenstersensor
+          conditions:
+            - condition: template
+              value_template: '{{ (window_sensor == []) }}'
+          sequence:
+            - service: cover.set_cover_position
+              data:
+                position: !input window_closed_value
+              target:
+                device_id: !input shutter
+            - service: input_text.set_value
+              data:
+                value: "Der Rolladen wurde automatisch vollständig geschlossen"
+              target:
+                entity_id: !input text_status
+            - service: input_select.select_option
+              data:
+                option: "Nacht"
+              target:
+                entity_id: !input mode
 
 ##########################################
 # Trigger_fenster_offen 12
@@ -1003,18 +1142,69 @@ action:
         id: shutter_moved
       - condition: template
         value_template: '{{is_state(mode, ''Nacht'')}}'
-      - '{{ now() >= today_at(states(earliest_open_non_workday)) and now() <= today_at(states(latest_open_non_workday)) }}'
+      - '{{ now() >= today_at(states(earliest_open_workday)) and now() <= today_at(states(latest_open_non_workday)) }}'
     sequence:
       - service: input_text.set_value
         data:
-          value: "Der Rolladen wurde manuell bedient"
+          value: "Der Rolladen wurde manuell bedient. Die Automatik wurde deaktiviert."
         target:
-          entity_id: !input text_status
+          entity_id: 
       - service: input_select.select_option  
         data:
           option: "Manuell"
         target:
           entity_id: !input mode
 
+######################################
+# Trigger Mittag 16
+######################################
+
+  - alias: Trigger_Mittag
+    conditions:
+      and:
+      - condition: trigger
+        id: Mittag
+      - condition: state
+        entity_id: !input mode
+        state: Manuell
+    sequence:
+      - service: input_text.set_value
+        data:
+          value: "Die Automatik wurde wieder aktiviert"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Tag"
+        target:
+          entity_id: !input mode
+
+######################################
+# Trigger Mitternacht 17
+######################################
+
+  - alias: Trigger_Mitternacht
+    conditions:
+      and:
+      - condition: trigger
+        id: Mitternacht
+      - condition: state
+        entity_id: !input mode
+        state: Manuell
+    sequence:
+      - service: input_text.set_value
+        data:
+          value: "Die Automatik wurde wieder aktiviert"
+        target:
+          entity_id: !input text_status
+      - service: input_select.select_option
+        data:
+          option: "Nacht"
+        target:
+          entity_id: !input mode
+
+          
   default:
     - stop: Keine Änderung am aktuellen Status
+
+  
